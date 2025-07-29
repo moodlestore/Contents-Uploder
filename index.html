@@ -352,12 +352,12 @@
                 <div class="send-actions-container">
                     <h3>어떤 타입으로 전송하시겠어요?</h3>
                     <div class="send-buttons-grid">
-                        <button class="btn btn-primary" data-type="portfolio_image" onclick="confirmSend(this.dataset.type)" disabled>Image</button>
-                        <button class="btn btn-primary" data-type="portfolio_video" onclick="confirmSend(this.dataset.type)" disabled>Video</button>
-                        <button class="btn btn-primary" data-type="product_ad_image" onclick="confirmSend(this.dataset.type)" disabled>제품 광고 / Image</button>
-                        <button class="btn btn-primary" data-type="product_ad_video" onclick="confirmSend(this.dataset.type)" disabled>제품 광고 / Video</button>
-                        <button class="btn btn-primary" data-type="client_ad_image" onclick="confirmSend(this.dataset.type)" disabled>클라이언트 / Image</button>
-                        <button class="btn btn-primary" data-type="client_ad_video" onclick="confirmSend(this.dataset.type)" disabled>클라이언트 / Video</button>
+                        <button class="btn btn-primary" data-type="portfolio_image" onclick="confirmSend(this.dataset.type, this.textContent)" disabled>Image</button>
+                        <button class="btn btn-primary" data-type="portfolio_video" onclick="confirmSend(this.dataset.type, this.textContent)" disabled>Video</button>
+                        <button class="btn btn-primary" data-type="product_ad_image" onclick="confirmSend(this.dataset.type, this.textContent)" disabled>제품 광고 / Image</button>
+                        <button class="btn btn-primary" data-type="product_ad_video" onclick="confirmSend(this.dataset.type, this.textContent)" disabled>제품 광고 / Video</button>
+                        <button class="btn btn-primary" data-type="client_ad_image" onclick="confirmSend(this.dataset.type, this.textContent)" disabled>클라이언트 / Image</button>
+                        <button class="btn btn-primary" data-type="client_ad_video" onclick="confirmSend(this.dataset.type, this.textContent)" disabled>클라이언트 / Video</button>
                     </div>
                 </div>
             </div>
@@ -548,13 +548,11 @@
         }
 
         // 전송 확인 모달
-        function confirmSend(type) {
+        function confirmSend(type, buttonText) {
             if (!selectedFile) return;
 
+            console.log('confirmSend called with type:', type, 'buttonText:', buttonText);
             pendingSendType = type;
-
-            // 버튼 텍스트 가져오기
-            const buttonText = event.target.textContent;
 
             // 확인 정보 설정
             document.getElementById('confirmFileName').textContent = selectedFile.name;
@@ -582,12 +580,16 @@
 
         function closeConfirmModal() {
             document.getElementById('confirmModal').style.display = 'none';
-            pendingSendType = '';
+            // pendingSendType는 초기화하지 않음
         }
 
         function proceedSend() {
             closeConfirmModal();
-            sendData(pendingSendType);
+            if (pendingSendType) {
+                sendData(pendingSendType);
+            } else {
+                console.error('pendingSendType is empty!');
+            }
         }
         
         // 데이터 전송
@@ -612,6 +614,14 @@
                 formData.append('filename', selectedFile.name);
                 formData.append('type', type);
                 formData.append('timestamp', new Date().toISOString());
+
+                // 디버깅용 로그
+                console.log('Sending data with type:', type);
+                for (let [key, value] of formData.entries()) {
+                    if (key !== 'file') {
+                        console.log(`${key}: ${value}`);
+                    }
+                }
 
                 addStatusMessage(`📤 '${selectedFile.name}' 전송 시작 (Type: ${type})`, 'info');
 
