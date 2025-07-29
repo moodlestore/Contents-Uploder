@@ -592,6 +592,14 @@
             }
         }
         
+        // 플랫폼 상태 포맷팅
+        function formatPlatformStatus(status) {
+            if (Array.isArray(status)) {
+                return status.join(', ');
+            }
+            return status || 'N/A';
+        }
+
         // 데이터 전송
         async function sendData(type) {
             if (!selectedFile) return;
@@ -628,8 +636,30 @@
                 const response = await fetch(webhookUrl, { method: 'POST', body: formData });
 
                 if (response.ok) {
-                    const responseText = await response.text();
-                    addStatusMessage(`✅ 전송 성공!\n응답: ${responseText}`, 'success');
+                    try {
+                        const responseData = await response.json();
+                        
+                        // 응답 데이터 포맷팅
+                        let formattedResponse = `✅ 전송 성공!`;
+                        formattedResponse += `\n📋 상태: ${responseData.status || 'N/A'}`;
+                        formattedResponse += `\n💬 메시지: ${responseData.message || 'N/A'}`;
+                        
+                        if (responseData.Instagram) {
+                            formattedResponse += `\n📱 Instagram: ${formatPlatformStatus(responseData.Instagram)}`;
+                        }
+                        if (responseData.Thread) {
+                            formattedResponse += `\n🧵 Thread: ${formatPlatformStatus(responseData.Thread)}`;
+                        }
+                        if (responseData.X) {
+                            formattedResponse += `\n🐦 X: ${formatPlatformStatus(responseData.X)}`;
+                        }
+                        
+                        addStatusMessage(formattedResponse, 'success');
+                    } catch (jsonError) {
+                        // JSON 파싱 실패 시 텍스트로 처리
+                        const responseText = await response.text();
+                        addStatusMessage(`✅ 전송 성공!\n응답: ${responseText}`, 'success');
+                    }
                 } else {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
@@ -637,7 +667,14 @@
                 addStatusMessage(`❌ 전송 실패: ${error.message}`, 'error');
             } finally {
                 loading.style.display = 'none';
-                resetUI(); 
+                // UI는 초기화하지만 상태 메시지는 유지
+                setTimeout(() => {
+                    selectedFile = null;
+                    document.getElementById('fileInput').value = '';
+                    mainArea.style.display = 'none';
+                    uploadContainer.style.display = 'block';
+                    sendButtons.forEach(btn => btn.disabled = true);
+                }, 1000); // 1초 후에 UI 초기화
             }
         }
 
