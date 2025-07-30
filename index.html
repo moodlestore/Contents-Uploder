@@ -591,16 +591,8 @@
                 console.error('pendingSendType is empty!');
             }
         }
-        
-        // 플랫폼 상태 포맷팅
-        function formatPlatformStatus(status) {
-            if (Array.isArray(status)) {
-                return status.join(', ');
-            }
-            return status || 'N/A';
-        }
 
-        // 데이터 전송
+        // 데이터 전송 - 수정된 부분
         async function sendData(type) {
             if (!selectedFile) return;
 
@@ -623,47 +615,104 @@
                 formData.append('type', type);
                 formData.append('timestamp', new Date().toISOString());
 
-                // 디버깅용 로그
-                console.log('Sending data with type:', type);
-                for (let [key, value] of formData.entries()) {
-                    if (key !== 'file') {
-                        console.log(`${key}: ${value}`);
-                    }
-                }
+                // 디버깅 로그 - 전송 데이터 확인
+                console.log('=== 전송 시작 ===');
+                console.log('Type:', type);
+                console.log('Webhook URL:', webhookUrl);
+                console.log('File name:', selectedFile.name);
+                console.log('File size:', selectedFile.size);
+                console.log('File type:', selectedFile.type);
 
                 addStatusMessage(`📤 '${selectedFile.name}' 전송 시작 (Type: ${type})`, 'info');
 
-                const response = await fetch(webhookUrl, { method: 'POST', body: formData });
+                const response = await fetch(webhookUrl, { 
+                    method: 'POST', 
+                    body: formData 
+                });
+
+                // 디버깅 로그 - 응답 상태 확인
+                console.log('=== 응답 수신 ===');
+                console.log('Response status:', response.status);
+                console.log('Response statusText:', response.statusText);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+                // 응답 텍스트를 한 번만 읽기 (중요!)
+                const responseText = await response.text();
+                console.log('Raw response text:', responseText);
 
                 if (response.ok) {
                     try {
-                        const responseData = await response.json();
+                        // JSON 파싱 시도 전에 응답 텍스트 정리
+                        let cleanResponseText = responseText.trim();
                         
-                        // 응답 데이터 포맷팅
-                        let formattedResponse = `✅ 전송 성공!`;
-                        formattedResponse += `\n📋 상태: ${responseData.status || 'N/A'}`;
-                        formattedResponse += `\n💬 메시지: ${responseData.message || 'N/A'}`;
+                        // 불완전한 JSON 수정 시도 (error 필드가 값 없이 끝나는 경우)
+                        if (cleanResponseText.includes('"error": \n}') || cleanResponseText.includes('"error": }')) {
+                            cleanResponseText = cleanResponseText.replace('"error": \n}', '"error": null }').replace('"error": }', '"error": null }');
+                        }
+                        if (cleanResponseText.endsWith('"error":')) {
+                            cleanResponseText += ' null';
+                        }
+                        if (cleanResponseText.endsWith('"error": ')) {
+                            cleanResponseText += 'null';
+                        }
+                        // 줄바꿈이 포함된 경우 처리
+                        cleanResponseText = cleanResponseText.replace(/("error":\s*\n\s*})/g, '"error": null }');
                         
-                        if (responseData.Instagram) {
-                            formattedResponse += `\n📱 Instagram: ${formatPlatformStatus(responseData.Instagram)}`;
+                        console.log('Cleaned response text:', cleanResponseText);
+                        
+                        const responseData = JSON.parse(cleanResponseText);
+                        console.log('Parsed response data:', responseData);
+                        
+                        // 응답 데이터 포맷팅 - 가독성 있게 구성
+                        let formattedResponse = `✅ 전송 성공`;
+                        
+                        // status 필드 확인
+                        if (responseData.status !== undefined && responseData.status !== null && responseData.status !== '') {
+                            formattedResponse += `\n상태 : ${responseData.status}`;
                         }
-                        if (responseData.Thread) {
-                            formattedResponse += `\n🧵 Thread: ${formatPlatformStatus(responseData.Thread)}`;
+                        
+                        // message 필드 확인
+                        if (responseData.message !== undefined && responseData.message !== null && responseData.message !== '') {
+                            formattedResponse += `\n메시지 : ${responseData.message}`;
                         }
-                        if (responseData.X) {
-                            formattedResponse += `\n🐦 X: ${formatPlatformStatus(responseData.X)}`;
+                        
+                        // error 필드 확인 - 값이 있을 때만 출력
+                        if (responseData.error !== undefined && responseData.error !== null && responseData.error !== '') {
+                            formattedResponse += `\n에러 : ${responseData.error}`;
+                        } else {
+                            // 에러 필드가 비어있거나 null인 경우도 표시
+                            formattedResponse += `\n에러 : `;
                         }
+                        
+                        // 기타 모든 필드들도 출력 (예상치 못한 필드들을 위해)
+                        Object.keys(responseData).forEach(key => {
+                            if (key !== 'status' && key !== 'message' && key !== 'error') {
+                                const value = responseData[key];
+                                if (value !== undefined && value !== null && value !== '') {
+                                    formattedResponse += `\n${key} : ${value}`;
+                                }
+                            }
+                        });
                         
                         addStatusMessage(formattedResponse, 'success');
+                        
                     } catch (jsonError) {
-                        // JSON 파싱 실패 시 텍스트로 처리
-                        const responseText = await response.text();
-                        addStatusMessage(`✅ 전송 성공!\n응답: ${responseText}`, 'success');
+                        // JSON 파싱 실패 시
+                        console.log('JSON parsing failed:', jsonError);
+                        console.log('Treating as plain text response');
+                        
+                        addStatusMessage(`✅ 전송 성공\n응답 : ${responseText}`, 'success');
                     }
                 } else {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    // HTTP 에러 상태 - responseText를 이미 읽었으므로 재사용
+                    console.log('Error response text:', responseText);
+                    
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}\n응답: ${responseText}`);
                 }
             } catch (error) {
+                console.log('=== 전송 에러 ===');
+                console.error('Error details:', error);
+                
                 addStatusMessage(`❌ 전송 실패: ${error.message}`, 'error');
             } finally {
                 loading.style.display = 'none';
@@ -687,7 +736,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // 상태 메시지 추가
+        // 상태 메시지 추가 - 말풍선 스타일로 개선
         function addStatusMessage(message, type) {
             const statusContent = document.getElementById('statusContent');
             const timestamp = new Date().toLocaleTimeString();
@@ -696,10 +745,60 @@
                 statusContent.innerHTML = '';
             }
             
-            const p = document.createElement('p');
-            p.className = type;
-            p.innerHTML = `<span>[${timestamp}]</span> ${message.replace(/\n/g, '<br>&nbsp;&nbsp;')}`;
-            statusContent.prepend(p);
+            const messageBlock = document.createElement('div');
+            messageBlock.style.marginBottom = '15px';
+            
+            // 시간 표시
+            const timeStamp = document.createElement('div');
+            timeStamp.innerHTML = `[${timestamp}]`;
+            timeStamp.style.fontWeight = 'bold';
+            timeStamp.style.marginBottom = '5px';
+            timeStamp.style.fontSize = '0.9rem';
+            timeStamp.style.opacity = '0.8';
+            
+            // 말풍선 스타일의 메시지 컨테이너
+            const messageContainer = document.createElement('div');
+            messageContainer.className = type;
+            messageContainer.style.background = type === 'success' ? '#d4edda' : 
+                                               type === 'error' ? '#f8d7da' : 'var(--bg-color)';
+            messageContainer.style.border = type === 'success' ? '1px solid #c3e6cb' : 
+                                           type === 'error' ? '1px solid #f5c6cb' : '1px solid var(--border-color)';
+            messageContainer.style.borderRadius = '8px';
+            messageContainer.style.padding = '12px';
+            messageContainer.style.marginLeft = '10px';
+            messageContainer.style.position = 'relative';
+            
+            // 말풍선 꼬리 부분
+            const bubble = document.createElement('div');
+            bubble.style.position = 'absolute';
+            bubble.style.top = '10px';
+            bubble.style.left = '-8px';
+            bubble.style.width = '0';
+            bubble.style.height = '0';
+            bubble.style.borderTop = '8px solid transparent';
+            bubble.style.borderBottom = '8px solid transparent';
+            bubble.style.borderRight = type === 'success' ? '8px solid #c3e6cb' : 
+                                                type === 'error' ? '8px solid #f5c6cb' : '8px solid var(--border-color)';
+            
+            const messageContent = document.createElement('div');
+            messageContent.innerHTML = message.replace(/\n/g, '<br>');
+            messageContent.style.fontSize = '0.95rem';
+            messageContent.style.lineHeight = '1.4';
+            
+            messageContainer.appendChild(bubble);
+            messageContainer.appendChild(messageContent);
+            
+            // 점선 구분선
+            const separator = document.createElement('div');
+            separator.style.borderTop = '1px dashed var(--border-color)';
+            separator.style.margin = '15px 0';
+            separator.style.opacity = '0.3';
+            
+            messageBlock.appendChild(timeStamp);
+            messageBlock.appendChild(messageContainer);
+            messageBlock.appendChild(separator);
+            
+            statusContent.prepend(messageBlock);
         }
 
         // 설정 모달 관련 함수
