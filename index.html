@@ -3,370 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>콘텐츠 업로드 도우미</title>
-    <style>
-        /* 테마 변수 */
-        :root {
-            --primary-color: #6a11cb;
-            --secondary-color: #2575fc;
-            --text-color: #333;
-            --bg-color: #f4f7f6;
-            --container-bg: #ffffff;
-            --border-color: #e0e0e0;
-            --modal-overlay: rgba(0,0,0,0.5);
-        }
-
-        /* 다크 테마 */
-        [data-theme="dark"] {
-            --primary-color: #bb86fc;
-            --secondary-color: #6200ee;
-            --text-color: #e0e0e0;
-            --bg-color: #121212;
-            --container-bg: #1e1e1e;
-            --border-color: #333;
-            --modal-overlay: rgba(255,255,255,0.1);
-        }
-
-        /* 민트 테마 */
-        [data-theme="mint"] {
-            --primary-color: #26d0ce;
-            --secondary-color: #1a9a98;
-            --text-color: #2c3e50;
-            --bg-color: #e8f8f7;
-            --container-bg: #ffffff;
-            --border-color: #b8e6e5;
-        }
-
-        /* 선셋 테마 */
-        [data-theme="sunset"] {
-            --primary-color: #fa709a;
-            --secondary-color: #fee140;
-            --text-color: #4a2c40;
-            --bg-color: #fff5f5;
-            --container-bg: #ffffff;
-            --border-color: #ffd0d0;
-        }
-
-        /* 오션 테마 */
-        [data-theme="ocean"] {
-            --primary-color: #0093e9;
-            --secondary-color: #80d0c7;
-            --text-color: #1a3a52;
-            --bg-color: #f0f9ff;
-            --container-bg: #ffffff;
-            --border-color: #b3d9ff;
-        }
-
-        /* 포레스트 테마 */
-        [data-theme="forest"] {
-            --primary-color: #134e4a;
-            --secondary-color: #14b8a6;
-            --text-color: #1e3a2f;
-            --bg-color: #f0fdf4;
-            --container-bg: #ffffff;
-            --border-color: #86efac;
-        }
-
-        /* 로즈골드 테마 */
-        [data-theme="rosegold"] {
-            --primary-color: #b76e79;
-            --secondary-color: #f4a7b9;
-            --text-color: #5c2e35;
-            --bg-color: #fdf2f4;
-            --container-bg: #ffffff;
-            --border-color: #f9c8d0;
-        }
-
-        /* 네온 테마 */
-        [data-theme="neon"] {
-            --primary-color: #ff006e;
-            --secondary-color: #8338ec;
-            --text-color: #f8f8f8;
-            --bg-color: #0a0a0a;
-            --container-bg: #1a1a1a;
-            --border-color: #3a3a3a;
-            --modal-overlay: rgba(255,255,255,0.1);
-        }
-
-        /* 크림 테마 */
-        [data-theme="cream"] {
-            --primary-color: #d4a574;
-            --secondary-color: #a67c52;
-            --text-color: #4a3728;
-            --bg-color: #faf6f0;
-            --container-bg: #ffffff;
-            --border-color: #e6d5c3;
-        }
-
-        /* 미드나잇 테마 */
-        [data-theme="midnight"] {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --text-color: #e0e7ff;
-            --bg-color: #0f172a;
-            --container-bg: #1e293b;
-            --border-color: #334155;
-            --modal-overlay: rgba(255,255,255,0.1);
-        }
-
-        /* 기본 & 레이아웃 */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            min-height: 100vh;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: var(--container-bg);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: background-color 0.3s;
-        }
-
-        /* 헤더 */
-        .header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-        .header h1 { font-size: 1.8rem; }
-
-        /* 메인 콘텐츠 */
-        .main-content { padding: 30px; }
-        
-        /* 상시 노출 버튼 영역 */
-        .global-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        /* 파일 업로드 영역 */
-        #uploadContainer {
-            border: 3px dashed var(--border-color);
-            border-radius: 12px;
-            padding: 60px 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        #uploadContainer.dragover {
-            border-color: var(--primary-color);
-            background-color: var(--primary-color);
-            background-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
-        }
-        #uploadContainer .upload-icon { font-size: 3rem; color: var(--text-color); opacity: 0.5; margin-bottom: 15px; }
-        #uploadContainer .upload-text { font-size: 1.1rem; color: var(--text-color); opacity: 0.7; }
-        .file-input { display: none; }
-
-        /* 파일 선택 후 메인 영역 */
-        #mainArea { display: none; }
-        
-        /* 미디어 미리보기 */
-        .preview-container { text-align: center; margin-bottom: 30px; }
-        .preview-media {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        /* 전송 버튼 그리드 */
-        .send-actions-container h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-color);
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        .send-buttons-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        /* 버튼 공통 스타일 */
-        .btn {
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-        }
-        .btn:hover:not(:disabled) { transform: translateY(-2px); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .btn-primary {
-            background: #ffffff;
-            color: #333333;
-            border: 2px solid #e0e0e0;
-            font-weight: 700;
-        }
-        .btn-primary:hover:not(:disabled) {
-            background: #f8f9fa;
-            border-color: #d0d0d0;
-        }
-        .btn-secondary {
-            background: var(--container-bg);
-            color: var(--text-color);
-            border: 2px solid var(--border-color);
-            padding: 10px 15px;
-        }
-        
-        /* 상태 표시 영역 */
-        .status-section { margin-top: 30px; }
-        .status-title { font-size: 1rem; font-weight: 600; margin-bottom: 10px; color: var(--text-color); opacity: 0.8; }
-        .status-content { 
-            background: var(--bg-color); 
-            padding: 15px; 
-            border-radius: 6px; 
-            font-family: 'Courier New', monospace; 
-            font-size: 0.9rem; 
-            white-space: pre-wrap; 
-            min-height: 50px; 
-            max-height: 200px; 
-            overflow-y: auto; 
-            color: var(--text-color);
-            opacity: 0.8;
-        }
-        .status-content .info { color: var(--text-color); opacity: 0.7; }
-        .status-content .success { color: #28a745; font-weight: bold; }
-        .status-content .error { color: #dc3545; font-weight: bold; }
-
-        /* 로딩 스피너 */
-        .loading { display: none; text-align: center; margin-top: 20px; color: var(--primary-color); }
-        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid var(--border-color); border-top: 3px solid var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* 모달 스타일 */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: var(--modal-overlay); }
-        .modal-content { background-color: var(--container-bg); margin: 10% auto; padding: 0; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .modal-header { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0; position: relative; }
-        .modal-title { font-size: 1.3rem; }
-        .close { position: absolute; right: 20px; top: 18px; font-size: 1.5rem; font-weight: bold; cursor: pointer; opacity: 0.8; }
-        .close:hover { opacity: 1; }
-        .modal-body { padding: 30px; }
-        .form-group { margin-bottom: 20px; }
-        .form-label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color); }
-        .form-input, .form-select { 
-            width: 100%; 
-            padding: 12px; 
-            border: 2px solid var(--border-color); 
-            border-radius: 8px; 
-            font-size: 1rem; 
-            background-color: var(--container-bg);
-            color: var(--text-color);
-        }
-        .form-input:focus, .form-select:focus { outline: none; border-color: var(--primary-color); }
-        .modal-footer { padding: 20px 30px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end; }
-
-        /* 테마 선택 버튼 */
-        .theme-selector {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .theme-button {
-            width: 100%;
-            height: 40px;
-            border: 2px solid transparent;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: white;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        }
-        .theme-button:hover { transform: scale(1.05); }
-        .theme-button.active { border-color: var(--text-color); box-shadow: 0 0 0 3px rgba(0,0,0,0.1); }
-        .theme-blue { background: linear-gradient(135deg, #6a11cb, #2575fc); }
-        .theme-dark { background: linear-gradient(135deg, #1e1e1e, #333); }
-        .theme-mint { background: linear-gradient(135deg, #26d0ce, #1a9a98); }
-        .theme-sunset { background: linear-gradient(135deg, #fa709a, #fee140); }
-        .theme-ocean { background: linear-gradient(135deg, #0093e9, #80d0c7); }
-        .theme-forest { background: linear-gradient(135deg, #134e4a, #14b8a6); }
-        .theme-rosegold { background: linear-gradient(135deg, #b76e79, #f4a7b9); }
-        .theme-neon { background: linear-gradient(135deg, #ff006e, #8338ec); }
-        .theme-cream { background: linear-gradient(135deg, #d4a574, #a67c52); }
-        .theme-midnight { background: linear-gradient(135deg, #667eea, #764ba2); }
-
-        /* 확인 모달 */
-        .confirm-info {
-            background: var(--bg-color);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .confirm-info p {
-            margin: 10px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .confirm-info strong {
-            color: var(--primary-color);
-        }
-        .confirm-preview {
-            max-width: 200px;
-            max-height: 150px;
-            border-radius: 8px;
-            margin: 20px auto;
-            display: block;
-        }
-    </style>
+    <title>AI Image Editor by Moodle AI Studio</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <div class="header"><h1>🚀 콘텐츠 업로드 도우미</h1></div>
+        <!-- 헤더 -->
+        <div class="header">
+            <h1>🎨 AI Image Editor by Moodle AI Studio</h1>
+        </div>
 
-        <div class="main-content">
-            <div class="global-actions">
-                <button class="btn btn-secondary" onclick="openSettingsModal()" title="설정">⚙️ 설정</button>
-                <button class="btn btn-secondary" onclick="resetUI()" title="초기화">🔄 초기화</button>
-            </div>
+        <!-- 전역 액션 버튼 -->
+        <div class="global-actions">
+            <button class="btn btn-secondary" onclick="CommonModule.openSettingsModal()" title="설정">⚙️ 설정</button>
+        </div>
 
-            <div id="uploadContainer" onclick="document.getElementById('fileInput').click()">
+        <!-- 탭 네비게이션 -->
+        <div class="tab-navigation">
+            <button class="tab-button active" onclick="CommonModule.switchTab(0)">📤 콘텐츠 업로드</button>
+            <button class="tab-button" onclick="CommonModule.switchTab(1)">🏷️ 제품 이미지</button>
+            <button class="tab-button" onclick="CommonModule.switchTab(2)">👤 제품+모델 이미지</button>
+        </div>
+
+        <!-- 탭 1: 콘텐츠 업로드 -->
+        <div class="tab-content active" id="tab1">
+            <div id="uploadContainer1" class="upload-area" onclick="document.getElementById('fileInput1').click()">
                 <div class="upload-icon">🖼️/🎬</div>
                 <div class="upload-text">파일을 드래그하거나 클릭하여 선택하세요</div>
-                <input type="file" id="fileInput" class="file-input" accept="image/*,video/*" onchange="handleFileSelect(event)">
+                <input type="file" id="fileInput1" class="file-input" accept="image/*,video/*" onchange="Tab1Module.handleFileSelect(event)">
             </div>
 
-            <div id="mainArea">
-                <div class="preview-container" id="previewContainer"></div>
+            <div id="mainArea1" style="display:none;">
+                <div class="preview-container" id="previewContainer1"></div>
 
                 <div class="send-actions-container">
                     <h3>어떤 타입으로 전송하시겠어요?</h3>
                     <div class="send-buttons-grid">
-                        <button class="btn btn-primary" data-type="portfolio_image" onclick="confirmSend(this.dataset.type, this.textContent)" disabled>Image</button>
-                        <button class="btn btn-primary" data-type="portfolio_video" onclick="confirmSend(this.dataset.type, this.textContent)" disabled>Video</button>
-                        <button class="btn btn-primary" data-type="product_ad_image" onclick="confirmSend(this.dataset.type, this.textContent)" disabled>제품 광고 / Image</button>
-                        <button class="btn btn-primary" data-type="product_ad_video" onclick="confirmSend(this.dataset.type, this.textContent)" disabled>제품 광고 / Video</button>
-                        <button class="btn btn-primary" data-type="client_ad_image" onclick="confirmSend(this.dataset.type, this.textContent)" disabled>클라이언트 / Image</button>
-                        <button class="btn btn-primary" data-type="client_ad_video" onclick="confirmSend(this.dataset.type, this.textContent)" disabled>클라이언트 / Video</button>
+                        <button class="btn btn-primary" data-type="portfolio_image" onclick="Tab1Module.confirmSend(this.dataset.type, this.textContent)" disabled>Image</button>
+                        <button class="btn btn-primary" data-type="portfolio_video" onclick="Tab1Module.confirmSend(this.dataset.type, this.textContent)" disabled>Video</button>
+                        <button class="btn btn-primary" data-type="product_ad_image" onclick="Tab1Module.confirmSend(this.dataset.type, this.textContent)" disabled>제품 광고 / Image</button>
+                        <button class="btn btn-primary" data-type="product_ad_video" onclick="Tab1Module.confirmSend(this.dataset.type, this.textContent)" disabled>제품 광고 / Video</button>
+                        <button class="btn btn-primary" data-type="client_ad_image" onclick="Tab1Module.confirmSend(this.dataset.type, this.textContent)" disabled>클라이언트 / Image</button>
+                        <button class="btn btn-primary" data-type="client_ad_video" onclick="Tab1Module.confirmSend(this.dataset.type, this.textContent)" disabled>클라이언트 / Video</button>
                     </div>
                 </div>
             </div>
 
-            <div class="loading" id="loading"><div class="spinner"></div> 전송 중입니다...</div>
-            <div class="status-section">
-                <div class="status-title">📋 전송 상태</div>
-                <div class="status-content" id="statusContent">데이터를 선택해주세요.</div>
+            <div class="loading" id="loading1"><div class="spinner"></div> 전송 중입니다...</div>
+        </div>
+
+        <!-- 탭 2: 제품 이미지 -->
+        <div class="tab-content" id="tab2">
+            <div class="upload-area" id="uploadContainer2" onclick="document.getElementById('fileInput2').click()">
+                <div class="upload-icon">📸</div>
+                <div class="upload-text">제품 이미지를 선택하세요</div>
+                <input type="file" id="fileInput2" class="file-input" accept="image/*" onchange="Tab2Module.handleFileSelect(event)">
             </div>
+
+            <div id="mainArea2" style="display:none;">
+                <div class="preview-container" id="previewContainer2"></div>
+
+                <div class="mode-selection">
+                    <div class="mode-option" onclick="Tab2Module.selectMode('auto')">
+                        <div class="mode-icon">🤖</div>
+                        <h4>자동 모드</h4>
+                        <p>AI가 알아서 광고 이미지를 생성합니다</p>
+                    </div>
+                    <div class="mode-option" onclick="Tab2Module.selectMode('manual')">
+                        <div class="mode-icon">✏️</div>
+                        <h4>수동 모드</h4>
+                        <p>프롬프트를 입력해서 원하는 스타일로 생성합니다</p>
+                    </div>
+                </div>
+
+                <div class="manual-prompt" id="manualPrompt2">
+                    <div class="form-group">
+                        <label class="form-label" for="promptInput2">생성할 광고 이미지 스타일을 설명해주세요</label>
+                        <textarea id="promptInput2" class="form-textarea" placeholder="예: 깔끔한 흰색 배경에 제품을 중앙에 배치하고, 고급스러운 느낌의 조명과 그림자 효과를 추가해주세요."></textarea>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="generateBtn2" onclick="Tab2Module.generateImages()" disabled>🎨 광고 이미지 생성</button>
+
+                <div class="result-images" id="resultImages2" style="display:none;"></div>
+            </div>
+
+            <div class="loading" id="loading2"><div class="spinner"></div> 이미지 생성 중입니다...</div>
+        </div>
+
+        <!-- 탭 3: 제품+모델 이미지 -->
+        <div class="tab-content" id="tab3">
+            <div class="dual-upload">
+                <div class="upload-section">
+                    <h4>📸 제품 이미지</h4>
+                    <div class="upload-area" id="uploadContainer3a" onclick="document.getElementById('fileInput3a').click()">
+                        <div class="upload-icon">🏷️</div>
+                        <div class="upload-text">제품 이미지 선택</div>
+                        <input type="file" id="fileInput3a" class="file-input" accept="image/*" onchange="Tab3Module.handleFileSelect(event, 'product')">
+                    </div>
+                    <div class="preview-container" id="previewContainer3a"></div>
+                </div>
+
+                <div class="upload-section">
+                    <h4>👤 모델 이미지</h4>
+                    <div class="upload-area" id="uploadContainer3b" onclick="document.getElementById('fileInput3b').click()">
+                        <div class="upload-icon">🙋</div>
+                        <div class="upload-text">모델 이미지 선택</div>
+                        <input type="file" id="fileInput3b" class="file-input" accept="image/*" onchange="Tab3Module.handleFileSelect(event, 'model')">
+                    </div>
+                    <div class="preview-container" id="previewContainer3b"></div>
+                </div>
+            </div>
+
+            <div id="mainArea3" style="display:none;">
+                <div class="form-group">
+                    <label class="form-label" for="promptInput3">광고 시나리오를 설명해주세요 (필수)</label>
+                    <textarea id="promptInput3" class="form-textarea" placeholder="예: 모델이 제품을 자연스럽게 소개하는 모습으로, 밝고 친근한 분위기의 배경에서 제품의 장점을 강조하는 광고 이미지를 만들어주세요."></textarea>
+                </div>
+
+                <button class="btn btn-primary" id="generateBtn3" onclick="Tab3Module.generateImages()" disabled>🎨 광고 이미지 생성</button>
+
+                <div class="result-images" id="resultImages3" style="display:none;"></div>
+            </div>
+
+            <div class="loading" id="loading3"><div class="spinner"></div> 이미지 생성 중입니다...</div>
+        </div>
+
+        <!-- 상태 메시지 -->
+        <div class="status-section">
+            <div class="status-title">📋 상태</div>
+            <div class="status-content" id="statusContent">시작하려면 탭을 선택하고 파일을 업로드해주세요.</div>
         </div>
     </div>
 
@@ -375,7 +141,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">⚙️ 설정</div>
-                <span class="close" onclick="closeSettingsModal()">&times;</span>
+                <span class="close" onclick="CommonModule.closeSettingsModal()">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -387,510 +153,42 @@
                     <input type="url" id="videoWebhookUrl" class="form-input" placeholder="https://hook.us2.make.com/...">
                 </div>
                 <div class="form-group">
+                    <label class="form-label" for="nanoBananaApiKey">Nano Banana API 키</label>
+                    <input type="password" id="nanoBananaApiKey" class="form-input" placeholder="sk-...">
+                </div>
+                <div class="form-group">
                     <label class="form-label">테마 선택</label>
                     <div class="theme-selector">
-                        <button class="theme-button theme-blue active" onclick="changeTheme('default')">클래식</button>
-                        <button class="theme-button theme-dark" onclick="changeTheme('dark')">다크</button>
-                        <button class="theme-button theme-mint" onclick="changeTheme('mint')">민트</button>
-                        <button class="theme-button theme-sunset" onclick="changeTheme('sunset')">선셋</button>
-                        <button class="theme-button theme-ocean" onclick="changeTheme('ocean')">오션</button>
-                        <button class="theme-button theme-forest" onclick="changeTheme('forest')">포레스트</button>
-                        <button class="theme-button theme-rosegold" onclick="changeTheme('rosegold')">로즈골드</button>
-                        <button class="theme-button theme-neon" onclick="changeTheme('neon')">네온</button>
-                        <button class="theme-button theme-cream" onclick="changeTheme('cream')">크림</button>
-                        <button class="theme-button theme-midnight" onclick="changeTheme('midnight')">미드나잇</button>
+                        <button class="theme-button theme-classic active" onclick="CommonModule.changeTheme('default')">클래식</button>
+                        <button class="theme-button theme-dark" onclick="CommonModule.changeTheme('dark')">다크</button>
+                        <button class="theme-button theme-mint" onclick="CommonModule.changeTheme('mint')">민트</button>
+                        <button class="theme-button theme-sunset" onclick="CommonModule.changeTheme('sunset')">선셋</button>
+                        <button class="theme-button theme-ocean" onclick="CommonModule.changeTheme('ocean')">오션</button>
+                        <button class="theme-button theme-forest" onclick="CommonModule.changeTheme('forest')">포레스트</button>
+                        <button class="theme-button theme-rosegold" onclick="CommonModule.changeTheme('rosegold')">로즈골드</button>
+                        <button class="theme-button theme-neon" onclick="CommonModule.changeTheme('neon')">네온</button>
+                        <button class="theme-button theme-cream" onclick="CommonModule.changeTheme('cream')">크림</button>
+                        <button class="theme-button theme-midnight" onclick="CommonModule.changeTheme('midnight')">미드나잇</button>
+                        <button class="theme-button theme-lavender" onclick="CommonModule.changeTheme('lavender')">라벤더</button>
+                        <button class="theme-button theme-coral" onclick="CommonModule.changeTheme('coral')">코랄</button>
+                        <button class="theme-button theme-turkish" onclick="CommonModule.changeTheme('turkish')">터키시</button>
+                        <button class="theme-button theme-golden" onclick="CommonModule.changeTheme('golden')">골든</button>
+                        <button class="theme-button theme-aqua" onclick="CommonModule.changeTheme('aqua')">아쿠아</button>
+                        <button class="theme-button theme-purple" onclick="CommonModule.changeTheme('purple')">퍼플</button>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeSettingsModal()">취소</button>
-                <button class="btn btn-primary" onclick="saveSettings()">저장</button>
+                <button class="btn btn-secondary" onclick="CommonModule.closeSettingsModal()">취소</button>
+                <button class="btn btn-primary" onclick="CommonModule.saveSettings()">저장</button>
             </div>
         </div>
     </div>
 
-    <!-- 전송 확인 모달 -->
-    <div id="confirmModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">📤 전송 확인</div>
-                <span class="close" onclick="closeConfirmModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="confirm-info">
-                    <p><span>파일명:</span> <strong id="confirmFileName"></strong></p>
-                    <p><span>파일 크기:</span> <strong id="confirmFileSize"></strong></p>
-                    <p><span>파일 타입:</span> <strong id="confirmFileType"></strong></p>
-                    <p><span>전송 타입:</span> <strong id="confirmSendType"></strong></p>
-                </div>
-                <img id="confirmPreview" class="confirm-preview" style="display:none;">
-                <video id="confirmVideoPreview" class="confirm-preview" controls style="display:none;"></video>
-                <p style="text-align: center; margin-top: 20px; color: var(--text-color); opacity: 0.8;">
-                    위 내용으로 전송하시겠습니까?
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeConfirmModal()">취소</button>
-                <button class="btn btn-primary" onclick="proceedSend()">확인</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // 전역 변수
-        let selectedFile = null;
-        let imageWebhookUrl = '';
-        let videoWebhookUrl = '';
-        let currentTheme = 'default';
-        let pendingSendType = '';
-
-        // UI 요소
-        const uploadContainer = document.getElementById('uploadContainer');
-        const mainArea = document.getElementById('mainArea');
-        const previewContainer = document.getElementById('previewContainer');
-        const sendButtons = document.querySelectorAll('.send-buttons-grid .btn');
-
-        // 페이지 로드 시 초기화
-        window.onload = () => { 
-            loadSettings(); 
-            resetUI(); 
-            applyTheme(currentTheme);
-        };
-
-        // 드래그 앤 드롭 이벤트
-        uploadContainer.addEventListener('dragover', (e) => { 
-            e.preventDefault(); 
-            uploadContainer.classList.add('dragover'); 
-        });
-        uploadContainer.addEventListener('dragleave', (e) => { 
-            e.preventDefault(); 
-            uploadContainer.classList.remove('dragover'); 
-        });
-        uploadContainer.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadContainer.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-        });
-
-        function handleFileSelect(event) { 
-            if (event.target.files.length > 0) handleFile(event.target.files[0]); 
-        }
-
-        // 파일 처리
-        function handleFile(file) {
-            const isImage = file.type.startsWith('image/');
-            const isVideo = file.type.startsWith('video/');
-
-            if (!isImage && !isVideo) {
-                alert('이미지 또는 영상 파일만 선택해주세요.');
-                return;
-            }
-
-            selectedFile = file;
-            
-            // UI 변경
-            uploadContainer.style.display = 'none';
-            mainArea.style.display = 'block';
-
-            // 미리보기 표시
-            previewContainer.innerHTML = '';
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                let mediaElement;
-                if (isImage) {
-                    mediaElement = document.createElement('img');
-                } else {
-                    mediaElement = document.createElement('video');
-                    mediaElement.controls = true;
-                }
-                mediaElement.src = e.target.result;
-                mediaElement.className = 'preview-media';
-                previewContainer.appendChild(mediaElement);
-            };
-            reader.readAsDataURL(file);
-            
-            updateSendButtons();
-        }
-
-        // 전송 버튼 상태 업데이트
-        function updateSendButtons() {
-            if (!selectedFile) return;
-
-            const isImage = selectedFile.type.startsWith('image/');
-            const isVideo = selectedFile.type.startsWith('video/');
-
-            sendButtons.forEach(button => {
-                const buttonType = button.dataset.type;
-                const isImageButton = buttonType.includes('image');
-                const isVideoButton = buttonType.includes('video');
-                
-                // 파일 타입과 웹훅 URL 확인
-                if (isImage && isImageButton && imageWebhookUrl) {
-                    button.disabled = false;
-                } else if (isVideo && isVideoButton && videoWebhookUrl) {
-                    button.disabled = false;
-                } else {
-                    button.disabled = true;
-                }
-            });
-        }
-
-        // 전체 UI 초기화
-        function resetUI() {
-            selectedFile = null;
-            document.getElementById('fileInput').value = '';
-            
-            mainArea.style.display = 'none';
-            uploadContainer.style.display = 'block';
-
-            sendButtons.forEach(btn => btn.disabled = true);
-            addStatusMessage('데이터를 선택해주세요.', 'info');
-        }
-
-        // 전송 확인 모달
-        function confirmSend(type, buttonText) {
-            if (!selectedFile) return;
-
-            console.log('confirmSend called with type:', type, 'buttonText:', buttonText);
-            pendingSendType = type;
-
-            // 확인 정보 설정
-            document.getElementById('confirmFileName').textContent = selectedFile.name;
-            document.getElementById('confirmFileSize').textContent = formatFileSize(selectedFile.size);
-            document.getElementById('confirmFileType').textContent = selectedFile.type;
-            document.getElementById('confirmSendType').textContent = buttonText;
-
-            // 미리보기 설정
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                if (selectedFile.type.startsWith('image/')) {
-                    document.getElementById('confirmPreview').src = e.target.result;
-                    document.getElementById('confirmPreview').style.display = 'block';
-                    document.getElementById('confirmVideoPreview').style.display = 'none';
-                } else {
-                    document.getElementById('confirmVideoPreview').src = e.target.result;
-                    document.getElementById('confirmVideoPreview').style.display = 'block';
-                    document.getElementById('confirmPreview').style.display = 'none';
-                }
-            };
-            reader.readAsDataURL(selectedFile);
-
-            document.getElementById('confirmModal').style.display = 'block';
-        }
-
-        function closeConfirmModal() {
-            document.getElementById('confirmModal').style.display = 'none';
-            // pendingSendType는 초기화하지 않음
-        }
-
-        function proceedSend() {
-            closeConfirmModal();
-            if (pendingSendType) {
-                sendData(pendingSendType);
-            } else {
-                console.error('pendingSendType is empty!');
-            }
-        }
-
-        // 데이터 전송 - 수정된 부분
-        async function sendData(type) {
-            if (!selectedFile) return;
-
-            const isImage = type.includes('image');
-            const webhookUrl = isImage ? imageWebhookUrl : videoWebhookUrl;
-
-            if (!webhookUrl) {
-                alert(`${isImage ? 'Image' : 'Video'} 웹훅 URL이 설정되지 않았습니다.`);
-                return;
-            }
-
-            const loading = document.getElementById('loading');
-            loading.style.display = 'block';
-            sendButtons.forEach(btn => btn.disabled = true);
-
-            try {
-                const formData = new FormData();
-                formData.append('file', selectedFile);
-                formData.append('filename', selectedFile.name);
-                formData.append('type', type);
-                formData.append('timestamp', new Date().toISOString());
-
-                // 디버깅 로그 - 전송 데이터 확인
-                console.log('=== 전송 시작 ===');
-                console.log('Type:', type);
-                console.log('Webhook URL:', webhookUrl);
-                console.log('File name:', selectedFile.name);
-                console.log('File size:', selectedFile.size);
-                console.log('File type:', selectedFile.type);
-
-                addStatusMessage(`📤 '${selectedFile.name}' 전송 시작 (Type: ${type})`, 'info');
-
-                const response = await fetch(webhookUrl, { 
-                    method: 'POST', 
-                    body: formData 
-                });
-
-                // 디버깅 로그 - 응답 상태 확인
-                console.log('=== 응답 수신 ===');
-                console.log('Response status:', response.status);
-                console.log('Response statusText:', response.statusText);
-                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-                // 응답 텍스트를 한 번만 읽기 (중요!)
-                const responseText = await response.text();
-                console.log('Raw response text:', responseText);
-
-                if (response.ok) {
-                    try {
-                        // JSON 파싱 시도 전에 응답 텍스트 정리
-                        let cleanResponseText = responseText.trim();
-                        
-                        // 불완전한 JSON 수정 시도 (error 필드가 값 없이 끝나는 경우)
-                        if (cleanResponseText.includes('"error": \n}') || cleanResponseText.includes('"error": }')) {
-                            cleanResponseText = cleanResponseText.replace('"error": \n}', '"error": null }').replace('"error": }', '"error": null }');
-                        }
-                        if (cleanResponseText.endsWith('"error":')) {
-                            cleanResponseText += ' null';
-                        }
-                        if (cleanResponseText.endsWith('"error": ')) {
-                            cleanResponseText += 'null';
-                        }
-                        // 줄바꿈이 포함된 경우 처리
-                        cleanResponseText = cleanResponseText.replace(/("error":\s*\n\s*})/g, '"error": null }');
-                        
-                        console.log('Cleaned response text:', cleanResponseText);
-                        
-                        const responseData = JSON.parse(cleanResponseText);
-                        console.log('Parsed response data:', responseData);
-                        
-                        // 응답 데이터 포맷팅 - 가독성 있게 구성
-                        let formattedResponse = `✅ 전송 성공`;
-                        
-                        // status 필드 확인
-                        if (responseData.status !== undefined && responseData.status !== null && responseData.status !== '') {
-                            formattedResponse += `\n상태 : ${responseData.status}`;
-                        }
-                        
-                        // message 필드 확인
-                        if (responseData.message !== undefined && responseData.message !== null && responseData.message !== '') {
-                            formattedResponse += `\n메시지 : ${responseData.message}`;
-                        }
-                        
-                        // error 필드 확인 - 값이 있을 때만 출력
-                        if (responseData.error !== undefined && responseData.error !== null && responseData.error !== '') {
-                            formattedResponse += `\n에러 : ${responseData.error}`;
-                        } else {
-                            // 에러 필드가 비어있거나 null인 경우도 표시
-                            formattedResponse += `\n에러 : `;
-                        }
-                        
-                        // 기타 모든 필드들도 출력 (예상치 못한 필드들을 위해)
-                        Object.keys(responseData).forEach(key => {
-                            if (key !== 'status' && key !== 'message' && key !== 'error') {
-                                const value = responseData[key];
-                                if (value !== undefined && value !== null && value !== '') {
-                                    formattedResponse += `\n${key} : ${value}`;
-                                }
-                            }
-                        });
-                        
-                        addStatusMessage(formattedResponse, 'success');
-                        
-                    } catch (jsonError) {
-                        // JSON 파싱 실패 시
-                        console.log('JSON parsing failed:', jsonError);
-                        console.log('Treating as plain text response');
-                        
-                        addStatusMessage(`✅ 전송 성공\n응답 : ${responseText}`, 'success');
-                    }
-                } else {
-                    // HTTP 에러 상태 - responseText를 이미 읽었으므로 재사용
-                    console.log('Error response text:', responseText);
-                    
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}\n응답: ${responseText}`);
-                }
-            } catch (error) {
-                console.log('=== 전송 에러 ===');
-                console.error('Error details:', error);
-                
-                addStatusMessage(`❌ 전송 실패: ${error.message}`, 'error');
-            } finally {
-                loading.style.display = 'none';
-                // UI는 초기화하지만 상태 메시지는 유지
-                setTimeout(() => {
-                    selectedFile = null;
-                    document.getElementById('fileInput').value = '';
-                    mainArea.style.display = 'none';
-                    uploadContainer.style.display = 'block';
-                    sendButtons.forEach(btn => btn.disabled = true);
-                }, 1000); // 1초 후에 UI 초기화
-            }
-        }
-
-        // 파일 크기 포맷
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        // 상태 메시지 추가 - 말풍선 스타일로 개선
-        function addStatusMessage(message, type) {
-            const statusContent = document.getElementById('statusContent');
-            const timestamp = new Date().toLocaleTimeString();
-            
-            if (statusContent.innerText === '데이터를 선택해주세요.' || type === 'info' && message === '데이터를 선택해주세요.') {
-                statusContent.innerHTML = '';
-            }
-            
-            const messageBlock = document.createElement('div');
-            messageBlock.style.marginBottom = '15px';
-            
-            // 시간 표시
-            const timeStamp = document.createElement('div');
-            timeStamp.innerHTML = `[${timestamp}]`;
-            timeStamp.style.fontWeight = 'bold';
-            timeStamp.style.marginBottom = '5px';
-            timeStamp.style.fontSize = '0.9rem';
-            timeStamp.style.opacity = '0.8';
-            
-            // 말풍선 스타일의 메시지 컨테이너
-            const messageContainer = document.createElement('div');
-            messageContainer.className = type;
-            messageContainer.style.background = type === 'success' ? '#d4edda' : 
-                                               type === 'error' ? '#f8d7da' : 'var(--bg-color)';
-            messageContainer.style.border = type === 'success' ? '1px solid #c3e6cb' : 
-                                           type === 'error' ? '1px solid #f5c6cb' : '1px solid var(--border-color)';
-            messageContainer.style.borderRadius = '8px';
-            messageContainer.style.padding = '12px';
-            messageContainer.style.marginLeft = '10px';
-            messageContainer.style.position = 'relative';
-            
-            // 말풍선 꼬리 부분
-            const bubble = document.createElement('div');
-            bubble.style.position = 'absolute';
-            bubble.style.top = '10px';
-            bubble.style.left = '-8px';
-            bubble.style.width = '0';
-            bubble.style.height = '0';
-            bubble.style.borderTop = '8px solid transparent';
-            bubble.style.borderBottom = '8px solid transparent';
-            bubble.style.borderRight = type === 'success' ? '8px solid #c3e6cb' : 
-                                                type === 'error' ? '8px solid #f5c6cb' : '8px solid var(--border-color)';
-            
-            const messageContent = document.createElement('div');
-            messageContent.innerHTML = message.replace(/\n/g, '<br>');
-            messageContent.style.fontSize = '0.95rem';
-            messageContent.style.lineHeight = '1.4';
-            
-            messageContainer.appendChild(bubble);
-            messageContainer.appendChild(messageContent);
-            
-            // 점선 구분선
-            const separator = document.createElement('div');
-            separator.style.borderTop = '1px dashed var(--border-color)';
-            separator.style.margin = '15px 0';
-            separator.style.opacity = '0.3';
-            
-            messageBlock.appendChild(timeStamp);
-            messageBlock.appendChild(messageContainer);
-            messageBlock.appendChild(separator);
-            
-            statusContent.prepend(messageBlock);
-        }
-
-        // 설정 모달 관련 함수
-        function openSettingsModal() {
-            document.getElementById('imageWebhookUrl').value = imageWebhookUrl;
-            document.getElementById('videoWebhookUrl').value = videoWebhookUrl;
-            updateThemeButtons();
-            document.getElementById('settingsModal').style.display = 'block';
-        }
-
-        function closeSettingsModal() {
-            document.getElementById('settingsModal').style.display = 'none';
-        }
-
-        function saveSettings() {
-            const imageUrl = document.getElementById('imageWebhookUrl').value.trim();
-            const videoUrl = document.getElementById('videoWebhookUrl').value.trim();
-            
-            if (!imageUrl && !videoUrl) { 
-                alert('최소 하나의 웹훅 URL을 입력해주세요.'); 
-                return; 
-            }
-
-            imageWebhookUrl = imageUrl;
-            videoWebhookUrl = videoUrl;
-            
-            localStorage.setItem('imageWebhookUrl', imageWebhookUrl);
-            localStorage.setItem('videoWebhookUrl', videoWebhookUrl);
-            localStorage.setItem('theme', currentTheme);
-            
-            updateSendButtons();
-            closeSettingsModal();
-            
-            const messages = [];
-            if (imageUrl) messages.push(`Image 웹훅: ${imageUrl}`);
-            if (videoUrl) messages.push(`Video 웹훅: ${videoUrl}`);
-            addStatusMessage(`✅ 설정이 저장되었습니다.\n${messages.join('\n')}`, 'info');
-        }
-
-        function loadSettings() {
-            imageWebhookUrl = localStorage.getItem('imageWebhookUrl') || '';
-            videoWebhookUrl = localStorage.getItem('videoWebhookUrl') || '';
-            currentTheme = localStorage.getItem('theme') || 'default';
-            
-            if (imageWebhookUrl || videoWebhookUrl) {
-                addStatusMessage('ⓘ 저장된 설정을 불러왔습니다.', 'info');
-            }
-        }
-
-        // 테마 관련 함수
-        function changeTheme(theme) {
-            currentTheme = theme;
-            applyTheme(theme);
-            updateThemeButtons();
-        }
-
-        function applyTheme(theme) {
-            if (theme === 'default') {
-                document.body.removeAttribute('data-theme');
-            } else {
-                document.body.setAttribute('data-theme', theme);
-            }
-        }
-
-        function updateThemeButtons() {
-            const buttons = document.querySelectorAll('.theme-button');
-            buttons.forEach(button => {
-                button.classList.remove('active');
-            });
-            
-            const themeMap = {
-                'default': 'theme-blue',
-                'dark': 'theme-dark',
-                'mint': 'theme-mint',
-                'sunset': 'theme-sunset',
-                'ocean': 'theme-ocean',
-                'forest': 'theme-forest',
-                'rosegold': 'theme-rosegold',
-                'neon': 'theme-neon',
-                'cream': 'theme-cream',
-                'midnight': 'theme-midnight'
-            };
-            
-            const activeButton = document.querySelector('.' + themeMap[currentTheme]);
-            if (activeButton) activeButton.classList.add('active');
-        }
-
-        // 모달 외부 클릭 시 닫기
-        window.onclick = (event) => { 
-            if (event.target === document.getElementById('settingsModal')) closeSettingsModal();
-            if (event.target === document.getElementById('confirmModal')) closeConfirmModal();
-        }
-    </script>
+    <!-- JavaScript 모듈들 로드 -->
+    <script src="js/common.js"></script>
+    <script src="js/tab1.js"></script>
+    <script src="js/tab2.js"></script>
+    <script src="js/tab3.js"></script>
 </body>
 </html>
